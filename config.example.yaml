@@ -1,0 +1,35 @@
+# 이 파일을 복사해 config.yaml 을 만들고 값을 채우세요. (config.yaml 은 git에 올라가지 않습니다)
+
+notion:
+  data_source_id: "노션-데이터-소스-ID"   # 데이터베이스 안의 표(collection) ID
+  api_version: "2025-09-03"
+  properties:            # 노션 표의 칸 이름
+    title: "할 일"
+    assignee: "담당자"
+    date: "날짜"
+    part: "파트"
+    epic: "에픽"
+    sp: "SP"
+    priority: "우선순위"
+    jira_key: "Jira 키"
+
+jira:
+  base_url: "https://your-site.atlassian.net"
+  project_key: "PROJ"
+  issue_type: "Task"                  # 한국어 Jira면 "작업"
+  story_points_field: "customfield_10000"
+  default_priority: "Medium"
+  epics:                              # 노션 에픽 선택지의 첫 단어 → Jira 에픽 키
+    "F-01": "PROJ-1"
+    "공통": "PROJ-2"
+  sprint:
+    enabled: true
+    board_id: null                    # 비워 두면 프로젝트의 보드를 자동으로 찾음
+
+rules:
+  allowed_sp: [1, 2, 3, 5]
+  weekly_sp_min: 25
+  weekly_sp_max: 30
+
+# 이메일로 Jira 계정을 자동으로 못 찾을 때만 직접 적어요: "이메일": "Jira accountId"
+members: {}
