@@ -68,6 +68,17 @@ def _plain(items: list | None) -> str:
     return "".join(i.get("plain_text", "") for i in items or []).strip()
 
 
+def _assignees(prop: dict) -> list[tuple[str, str | None]]:
+    """담당자 칸 읽기. 선택 속성(이름)과 사람 속성(이름+이메일) 둘 다 받는다."""
+    if prop.get("type") == "select" or "select" in prop:
+        value = prop.get("select")
+        return [(value["name"], None)] if value else []
+    return [
+        (u.get("name") or "(이름 없음)", (u.get("person") or {}).get("email"))
+        for u in prop.get("people", [])
+    ]
+
+
 def parse_task(page: dict, props: dict) -> Task:
     """노션 API 응답의 페이지 한 개를 Task로 바꾼다."""
     p = page.get("properties", {})
@@ -82,10 +93,7 @@ def parse_task(page: dict, props: dict) -> Task:
         value = get(key).get("select")
         return value["name"] if value else None
 
-    people = [
-        (u.get("name") or "(이름 없음)", (u.get("person") or {}).get("email"))
-        for u in get("assignee").get("people", [])
-    ]
+    people = _assignees(get("assignee"))
     d = get("date").get("date")
 
     return Task(
