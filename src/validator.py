@@ -23,8 +23,17 @@ class ValidationResult:
     sp_by_person: dict[str, int] = field(default_factory=dict)
 
 
-def validate(new_tasks: list[Task], week_tasks: list[Task], rules: dict, default_priority: str, epics: dict) -> ValidationResult:
-    """new_tasks: 아직 Jira 키가 없는 줄, week_tasks: 그 주의 모든 줄(합계 계산용)."""
+def validate(
+    new_tasks: list[Task],
+    week_tasks: list[Task],
+    rules: dict,
+    default_priority: str,
+    epics: dict,
+    members: dict | None = None,
+) -> ValidationResult:
+    """new_tasks: 아직 Jira 키가 없는 줄, week_tasks: 그 주의 모든 줄(합계 계산용).
+    members: config.yaml의 '이름 또는 이메일 -> Jira accountId' 표."""
+    members = members or {}
     allowed = sorted({int(x) for x in rules.get("allowed_sp", [1, 2, 3, 5])})
     allowed_str = {str(x) for x in allowed}
     result = ValidationResult()
@@ -41,8 +50,11 @@ def validate(new_tasks: list[Task], week_tasks: list[Task], rules: dict, default
             errs.append("담당자가 비어 있어요")
         elif len(t.assignees) > 1:
             errs.append("담당자는 한 명만 지정해야 해요")
-        elif not t.assignee_email:
-            errs.append("담당자 이메일을 읽을 수 없어요 (노션 연결 권한의 '이메일 포함 사용자 정보' 확인)")
+        elif t.assignee_name not in members and not t.assignee_email:
+            errs.append(
+                f"담당자 '{t.assignee_name}'의 Jira 계정을 알 수 없어요 "
+                "(config.yaml의 members에 '이름: accountId'를 추가하거나, 사람 속성이면 이메일 권한 확인)"
+            )
 
         if not t.date:
             errs.append("날짜가 비어 있어요")
