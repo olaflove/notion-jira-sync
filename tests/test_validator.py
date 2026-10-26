@@ -69,6 +69,19 @@ def test_담당자_이메일을_못_읽으면_제외한다():
     assert "이메일" in result.problems[0][1][0]
 
 
+def test_이름으로_members에_있으면_이메일_없이도_등록한다():
+    task = make_task(assignees=[("김지윤", None)])
+    result = validate([task], [task], RULES, "Medium", EPICS, {"김지윤": "acc-1"})
+    assert len(result.ready) == 1
+
+
+def test_이름이_members에_없으면_추가하라고_알려준다():
+    task = make_task(assignees=[("새팀원", None)])
+    result = validate([task], [task], RULES, "Medium", EPICS, {"김지윤": "acc-1"})
+    assert result.ready == []
+    assert "members" in result.problems[0][1][0]
+
+
 # ---------- 에픽 ----------
 
 def test_설정에_없는_에픽은_제외한다():
