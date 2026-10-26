@@ -65,7 +65,8 @@ def main(argv: list[str] | None = None) -> int:
     print(f"노션에서 {len(week_tasks)}줄 읽음 (이미 등록 {len(week_tasks) - len(new_tasks)}줄, 새로 등록할 후보 {len(new_tasks)}줄)")
 
     # 2. 검사
-    result = validate(new_tasks, week_tasks, rules, j_cfg.get("default_priority", "Medium"), j_cfg["epics"])
+    members = cfg.get("members") or {}
+    result = validate(new_tasks, week_tasks, rules, j_cfg.get("default_priority", "Medium"), j_cfg["epics"], members)
     if result.sp_by_person:
         print("\n[사람별 이번 주 SP 합계]")
         for name, total in sorted(result.sp_by_person.items()):
@@ -86,7 +87,7 @@ def main(argv: list[str] | None = None) -> int:
     planned: list[tuple] = []
     for t in result.ready:
         try:
-            account_id = jira.find_account_id(t.assignee_email, cfg.get("members") or {})
+            account_id = jira.resolve_account(t.assignee_name, t.assignee_email, members)
         except JiraError as e:
             print(f"  X {t.title} / {t.assignee_name}: {e}")
             continue
