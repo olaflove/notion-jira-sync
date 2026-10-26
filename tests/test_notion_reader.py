@@ -69,6 +69,16 @@ def test_이메일_권한이_없으면_이메일은_None():
     assert parse_task(page, PROPS).assignees == [("조유진", None)]
 
 
+def test_담당자가_선택_속성이면_이름만_읽는다():
+    page = notion_page(**{"담당자": {"type": "select", "select": {"name": "김지윤"}}})
+    assert parse_task(page, PROPS).assignees == [("김지윤", None)]
+
+
+def test_선택_속성_담당자가_비어_있으면_빈_목록():
+    page = notion_page(**{"담당자": {"type": "select", "select": None}})
+    assert parse_task(page, PROPS).assignees == []
+
+
 def test_이미_등록된_줄은_Jira_키를_읽는다():
     page = notion_page(**{"Jira 키": {"type": "rich_text", "rich_text": [{"plain_text": " PROJ-12 "}]}})
     assert parse_task(page, PROPS).jira_key == "PROJ-12"
