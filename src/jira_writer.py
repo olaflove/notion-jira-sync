@@ -49,6 +49,16 @@ class JiraClient:
         self._account_cache[email] = candidates[0]["accountId"]
         return self._account_cache[email]
 
+    def resolve_account(self, name: str, email: str | None, members: dict | None = None) -> str:
+        """담당자 -> Jira accountId. config.yaml members의 이름을 먼저 보고, 없으면 이메일로 찾는다.
+        이름으로 Jira를 검색하지 않는 이유: 공용 사이트에는 같은 이름의 다른 계정이 있을 수 있다."""
+        members = members or {}
+        if name in members:
+            return members[name]
+        if email:
+            return self.find_account_id(email, members)
+        raise JiraError(f"'{name}'의 Jira 계정을 알 수 없어요. config.yaml의 members에 '{name}: accountId'를 추가하세요.")
+
     # ---------- 이슈 ----------
     def create_issue(self, fields: dict) -> str:
         return self._request("POST", "/rest/api/3/issue", json={"fields": fields})["key"]
