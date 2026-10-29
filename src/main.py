@@ -16,6 +16,7 @@ import requests
 from .config import ConfigError, load_config
 from .jira_writer import JiraClient, JiraError, build_fields
 from .notion_reader import NotionClient, NotionError, parse_task
+from .ordering import sort_for_creation
 from .validator import validate
 
 
@@ -83,9 +84,9 @@ def main(argv: list[str] | None = None) -> int:
                 print(f"      - {err}")
             print(f"      {t.url}")
 
-    # 3. Jira 계정 찾기 + 필드 만들기
+    # 3. Jira 계정 찾기 + 필드 만들기 (만드는 순서 = 담당자(members 순) -> 마감일 -> (n/m) 순번)
     planned: list[tuple] = []
-    for t in result.ready:
+    for t in sort_for_creation(result.ready, list(members)):
         try:
             account_id = jira.resolve_account(t.assignee_name, t.assignee_email, members)
         except JiraError as e:
